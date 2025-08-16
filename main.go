@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -19,24 +20,28 @@ func main() {
 
 	for {
 		data := make([]byte, 8)
-		_, err := file.Read(data)
+		n, err := file.Read(data)
 
-		if err == io.EOF {
-			fmt.Printf("read: %s\n", currentLine)
+		if err != nil {
+			if currentLine != "" {
+				fmt.Printf("read: %s\n", currentLine)
+			}
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			log.Fatalf("Erro lendo arquivo: %v", err)
 			break
 		}
-		if err != nil {
-			log.Fatalf("Erro lendo arquivo: %v", err)
+
+		lineStrings := strings.Split(string(data[:n]), "\n") // data[:n] é importante para não vazar bytes nulos ou lixo na string()
+
+		// Se tem apenas 1 item no vetor lineStrings, len(lineStrings)-1 = 0, ou seja, loop não roda pois 0 < 0 = false
+		for i := 0; i < len(lineStrings)-1; i++ {
+			fmt.Printf("read: %s%s\n", currentLine, lineStrings[i])
+			currentLine = ""
 		}
 
-		lineStrings := strings.Split(string(data), "\n")
-
-		currentLine += lineStrings[0]
-
-		if len(lineStrings) > 1 {
-			fmt.Printf("read: %s\n", currentLine)
-
-			currentLine = lineStrings[1]
-		}
+		// coloca o último elemento sempre em currentLine
+		currentLine += lineStrings[len(lineStrings)-1]
 	}
 }
