@@ -16,17 +16,21 @@ func main() {
 	}
 	defer file.Close() // defer -> quando a função main terminar, o arquivo será fechado
 
+	// como se fosse um for await no js - cada out <- valor dispara esse range
 	for i := range getLinesChannel(file) {
 		fmt.Printf("read: %s\n", i)
 	}
 }
 
 func getLinesChannel(f io.ReadCloser) <-chan string {
-	currentLine := ""
 	out := make(chan string)
 
+	// roda go routines em paralelo para processamento (mais rápido que threads nativas)
 	go func() {
 		defer close(out)
+
+		currentLine := ""
+
 		for {
 			data := make([]byte, 8)
 			n, err := f.Read(data)
