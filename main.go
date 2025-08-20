@@ -5,26 +5,30 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
+	"net"
 	"strings"
 )
 
-func main() {
-	file, err := os.Open("messages.txt")
-	if err != nil {
-		log.Fatalf("Erro abrindo arquivo: %v", err)
-	}
-	defer file.Close() // defer -> quando a função main terminar, o arquivo será fechado
-
-	// como se fosse um for await no js - cada out <- valor dispara esse range
-	lines := getLinesChannel(file)
-	for line := range lines {
-		fmt.Printf("read: %s\n", line)
-	}
-}
-
-func getLinesChannel(f io.ReadCloser) <-chan string {
+func getLinesChannel() <-chan string {
 	out := make(chan string)
+
+	connection := "tcp"
+	port := ":42069"
+
+	listener, err := net.Listen(connection, port)
+
+	if err != nil {
+		log.Fatal("Erro ao abrir conexão " + connection + " na porta " + port + ":" + err.Error())
+	}
+	defer listener.Close()
+
+	conn, errAccept := listener.Accept()
+
+	if errAccept != nil {
+		log.Fatal("Erro ao aceitar conexão " + connection + " na porta " + port)
+	}
+
+	fmt.Println("Conexão " + connection + " na porta " + port + " foi aceita.")
 
 	// roda go routines em paralelo para processamento (mais rápido que threads nativas)
 	go func() {
@@ -34,16 +38,17 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 
 		for {
 			data := make([]byte, 8)
-			n, err := f.Read(data)
 
-			if err != nil {
+			n, errCon := conn.Read(data)
+
+			if errCon != nil {
 				if currentLine != "" {
-					fmt.Printf("read: %s\n", currentLine)
+					fmt.Printf("%s\n", currentLine)
 				}
-				if errors.Is(err, io.EOF) {
+				if errors.Is(errCon, io.EOF) {
 					break
 				}
-				log.Fatalf("Erro lendo arquivo: %v", err)
+				log.Fatalf("Erro lendo bytes: %v", errCon)
 				break
 			}
 
@@ -61,4 +66,12 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 	}()
 
 	return out
+}
+
+func main() {
+	// como se fosse um for await no js - cada out <- valor dispara esse range
+	lines := getLinesChannel()
+	for line := range lines {
+		fmt.Printf("%s\n", line)
+	}
 }
