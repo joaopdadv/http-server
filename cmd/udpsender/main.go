@@ -30,7 +30,12 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
-		input, _ := reader.ReadString('\n') // reads until newLine is found
+		input, errInput := reader.ReadString('\n') // reads until newLine is found
+
+		if errInput != nil {
+			log.Fatal("Error reading line: " + errInput.Error())
+			break
+		}
 
 		_, err := conn.Write([]byte(input))
 
