@@ -15,39 +15,27 @@ func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
 	l1Aux := l1;
 	l2Aux := l2;
 
-	resto := 0;
-	// iterar até ambos nulos
-	for {
-		if(l1Aux == nil && l2Aux == nil){
-			break
-		}
-	
-		// somar
-		l1Val := 0;
-		l2Val := 0;
+	sum := 0;
 
+	// iterar até ambos nulos
+	for l1Aux != nil || l2Aux != nil {
+		
+		// somar
 		if(l1Aux != nil){
-			l1Val = l1Aux.Val
+			sum += l1Aux.Val
+			l1Aux = l1Aux.Next
 		}
 		if(l2Aux != nil){
-			l2Val = l2Aux.Val
-		}
-
-		sum := l1Val + l2Val + resto;
-		resto = 0;
-		
-		// salvar o resto (se maior que 10 -> val - 10)
-		if (sum >= 10){
-			resto = 1; // resto 1 pois nunca vai ser mais que 18 a soma (9+9)
-			sum = sum - 10;
+			sum += l2Aux.Val
+			l2Aux = l2Aux.Next
 		}
 
 		newNode := ListNode{
-			Val: sum,
+			Val: sum % 10,
 			Next: nil,
 		}
 
-		// gravar o valor da unidad
+		// gravar o valor da unidade
 		if (aux != nil) {
 			aux.Next = &newNode;
 		} else {
@@ -55,25 +43,16 @@ func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
 		}
 		aux = &newNode;
 
-		if(l1Aux != nil){
-			l1Aux = l1Aux.Next
-		}
-		if(l2Aux != nil){
-			l2Aux = l2Aux.Next
-		}
+		sum /= 10;
 	}
 
 	// no fim, se resto, add resto
-	if(resto != 0){
+	if(sum > 0){
 		// add to last node .next
-		newNode := ListNode{
-			Val: resto,
+		aux.Next = &ListNode{
+			Val: sum,
 			Next: nil,
-		}
-
-		aux.Next = &newNode;
-		aux = &newNode
-		
+		};
 	}
 
 	return head;
