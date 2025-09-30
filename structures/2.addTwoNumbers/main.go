@@ -8,8 +8,75 @@ type ListNode struct {
 }
 
 func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
-    
-	return nil
+
+	var aux *ListNode = nil
+	var head *ListNode;
+
+	l1Aux := l1;
+	l2Aux := l2;
+
+	resto := 0;
+	// iterar até ambos nulos
+	for {
+		if(l1Aux == nil && l2Aux == nil){
+			break
+		}
+	
+		// somar
+		l1Val := 0;
+		l2Val := 0;
+
+		if(l1Aux != nil){
+			l1Val = l1Aux.Val
+		}
+		if(l2Aux != nil){
+			l2Val = l2Aux.Val
+		}
+
+		sum := l1Val + l2Val + resto;
+		resto = 0;
+		
+		// salvar o resto (se maior que 10 -> val - 10)
+		if (sum >= 10){
+			resto = 1; // resto 1 pois nunca vai ser mais que 18 a soma (9+9)
+			sum = sum - 10;
+		}
+
+		newNode := ListNode{
+			Val: sum,
+			Next: nil,
+		}
+
+		// gravar o valor da unidad
+		if (aux != nil) {
+			aux.Next = &newNode;
+		} else {
+			head = &newNode;
+		}
+		aux = &newNode;
+
+		if(l1Aux != nil){
+			l1Aux = l1Aux.Next
+		}
+		if(l2Aux != nil){
+			l2Aux = l2Aux.Next
+		}
+	}
+
+	// no fim, se resto, add resto
+	if(resto != 0){
+		// add to last node .next
+		newNode := ListNode{
+			Val: resto,
+			Next: nil,
+		}
+
+		aux.Next = &newNode;
+		aux = &newNode
+		
+	}
+
+	return head;
 }
 
 func makeListFromArray(array []int) *ListNode {
@@ -54,12 +121,12 @@ func printList(list *ListNode) {
 
 func main() {
 
-	l1 := makeListFromArray([]int{3,4,2});
+	l1 := makeListFromArray([]int{9,9,9,9,9,9,9});
 	printList(l1)
 
-	l2 := makeListFromArray([]int{4,6,5});
+	l2 := makeListFromArray([]int{9,9,9,9});
 	printList(l2)
 
-	addTwoNumbers(l1,l2);
-
+	sum := addTwoNumbers(l1,l2);
+	printList(sum)
 }
